@@ -1,0 +1,3 @@
+RewriteEngine on
+RewriteCond $1 !^(index\.php|public|images|files|robots\.txt)
+RewriteRule ^(.*)$ /sqls/index.php/$1 [L]

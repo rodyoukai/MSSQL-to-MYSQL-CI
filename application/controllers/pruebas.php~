@@ -1,0 +1,413 @@
+<?php
+class Pruebas extends CI_Controller {
+	
+	 public function __construct() 
+    { 
+        // Creamos el contructor y cargamos la librerias y modelos 
+        parent::__construct(); 
+        $this->load->dbforge();
+    } 
+  	
+	function arregla_date($tabla)
+	{
+
+		$csv = 'files/'.$tabla;
+
+				
+		$this->load->library('csvreader');
+		
+		$array = $this->csvreader->parse_file(base_url().$csv);
+
+		
+		$campo = explode(",", $array[0][0]); //se separan los nombres de los campos en un array
+
+		print_r($campo);
+
+		echo br(3);
+		
+		$i=0; 
+
+		foreach ($campo as $clave) { //se Busca que nombres de campos se relacionan con fechas
+
+			if( (strstr($clave, 'fecha') != null OR strstr($clave, 'Fecha')) AND (strstr($clave, 'id') == NULL) )
+			{
+				$checar[] = $i;
+			}
+									
+			$i++;	
+			
+ 				$campos[$clave] =  array('type' => 'varchar', 'constraint' => '300');
+			
+		}		
+
+		print_r($checar);
+
+		echo br(3);
+		
+		
+
+		
+		if ($this->db->table_exists($tabla) == FALSE)
+		{
+			$this->dbforge->add_field($campos);
+
+			$this->dbforge->create_table($tabla);
+
+		}
+
+		print_r($campos);
+
+		echo br(3);
+
+
+
+		for($j=1;$j<count($array);$j++) //separra los arreglos en comas demas de quitar el primero que contiene los nombres de las columnas
+		{	
+			for($i=0;$i<count($array[$j]);$i++)
+			{
+				
+			
+					
+						$arreglo[] = explode(",", $array[$j][$i]); 
+					
+					
+			}
+			
+		}	
+
+		//print_r($arreglo);
+
+		foreach ($arreglo as $key) {
+			print_r($key);
+			echo br(2);
+		}
+		
+		/*
+		
+		if(isset($checar))
+		{	
+			for($i=0;$i<count($arreglo);$i++)
+			{
+				for($j=0;$j<count($checar);$j++)
+				{
+
+					$date = $checar[$j];
+					if($arreglo[$i][$date] != null)
+					{
+						$arreglo[$i][$date] = $this->normalizar_fecha_hora($arreglo[$i][$date]);
+						//echo $this->normalizar_fecha_hora($arreglo[$i][$date]);
+					}
+
+				}
+			}
+		}
+
+		print_r($arreglo);
+
+		
+
+		//print_r($arreglo);
+
+		echo br(3);
+
+		echo count($arreglo);
+
+		for($i=0;$i<count($arreglo);$i++)
+		{
+			$t = 0;
+			foreach ($campos as $key => $value)
+			{
+				$insert[$i][$key] = $arreglo[$i][$t];
+				$t++;
+			}
+
+
+		}
+
+		print_r($insert);
+
+		
+
+		for($i=0;$i<count($arreglo);$i++)
+		{
+
+			$query = $this->db->insert($tabla, $insert[$i]);
+
+		}	
+		
+		print_r($insert);
+
+		*/
+	}
+
+
+	function normalizar_fecha_hora($campo)
+	{
+
+			$primera = explode("/", $campo);
+			//divide la $fecha "mm/dd/yyyy hh:mm:ss AM" en:
+			//$primera[0]= "mm"
+			//$primera[1]= "dd"
+			//$primera[2]= "yyyy hh:mm:ss AM"
+
+			$segunda = explode(" ", $primera[2]);
+			//divide $primera[2] en:
+			//$segunda[0] = "yyyy"
+			//$segunda[1] = "hh:mm:ss"
+			//$segunda[2] = "AM"
+
+			$fecha = $segunda[0]."-".$primera[0]."-".$primera[1];
+
+			$tercera = explode(":", $segunda[1]);
+			//divide $segunda[1] en:
+			//$tercera[0] = "hh"
+			//$tercera[1] = "mm"
+			//$tercera[2] = "ss"
+
+			if ($segunda[2] == "PM" && $tercera[0] < 12)
+			{
+				$tercera[0] = $tercera[0]+12;
+			}	// convierta la hora a formato de 24
+
+			if($segunda[2] == "AM" && $tercera[0] == 12)
+			{
+
+				$tercera[0] = 0;
+			}	
+
+			$hora = $tercera[0].":".$tercera[1].":".$tercera[2];		
+
+			$fecha_hora = $fecha." ".$hora;
+
+			return $fecha_hora;
+	}
+
+
+	function userdata()
+	{
+
+		$this->load->library('session');		
+
+		$nuevosdatos = array(
+                   'nombre_de_usuario'  => 'johndoe',
+                   'email'     => 'johndoe@algun-sitio.com',
+                   'ingresado' => TRUE
+               );
+
+		$this->session->set_userdata($nuevosdatos);
+
+		echo $this->session->userdata('email');
+
+
+	}
+	 function login()
+	{ 	
+		$this->load->model('login_model');  		
+  		$datos= array('user' => 'rod', 'pass' => 123);
+  		
+  		$query = $this->login_model->accesando($datos);
+  		
+  		print_r($query);
+  	}
+  	function sacar_aplicaciones()
+	{
+		$this->load->model('resultados_stroop_model');		
+		
+		$aplicaciones = $this->resultados_stroop_model->aplicaciones('rod', '123', 'stroop3');	
+		
+		print_r($aplicaciones);
+		
+	
+	
+   }
+	
+	function tabla_head()
+	{
+		$this->load->library('table');		
+		$this->load->model('config_stroop_model');	
+		$campos = $this->config_stroop_model->listar_campos_test('stroop3_panas28');
+	  	
+	 
+	
+		$plantilla = array ('table_open' => '<table border="0" class="table">');
+			
+			$this->table->set_template($plantilla); 
+					
+			$this->table->set_heading($campos);
+			
+			$tabla = $this->table->generate();
+			
+			$tabla = str_replace("</table>", "", $tabla);
+			
+		  echo br(5);
+			
+		  echo $tabla;
+	
+	}		
+	
+	
+	
+	function tablas() {
+   $this->load->model('usuarios_model');  	
+		
+	  	$campos = $this->usuarios_model->todos_los_usuarios();
+	  	
+	  //	print_r($campos);
+	  	
+	  	echo br(5);
+  		
+  		$this->load->library('table');
+
+		$campos = $this->usuarios_model->listar_campos_usuarios();
+		//print_r($campos);
+		$usuarios = $this->usuarios_model->todos_los_usuarios();
+		
+		$campos[] = "<strong>Borrar</strong>"; 		
+		
+		for($i=0;$i<count($usuarios);$i++) 
+			{
+					$usuarios[$i][] = "<input name='borrar' value= '".$usuarios[$i]["usuario"]."' type='radio'>";			
+			}
+			
+			$plantilla = array ('table_open'          => '<table border="0" class="table">');
+			
+			$this->table->set_template($plantilla); 
+					
+			$this->table->set_heading($campos);	
+			
+			
+
+		$tabla = $this->table->generate($usuarios);
+		/*
+		header("Content-type: application/octet-stream");
+		//indicamos al navegador que se está devolviendo un archivo
+		header("Content-Disposition: attachment; filename=paises.xls");
+		//con esto evitamos que el navegador lo grabe en su caché
+		header("Pragma: no-cache");
+		header("Expires: 0");
+		//damos salida a la tabla
+		echo $tabla; 
+  	*/
+   }  	
+  	
+  	
+  	function campos() {
+   $this->load->model('usuarios_model');  	
+		
+	  	$campos = $this->usuarios_model->listar_campos_usuarios();
+	  	
+	  	print_r($campos);
+  	
+  	
+   }	
+  	
+  	function temas() {
+
+	$this->load->model('lista_tablas_model');	
+	
+	$temas_stroop1 = $this->lista_tablas_model->listar_filtrar_tablas('stroop1_');
+	$temas_stroop2 = $this->lista_tablas_model->listar_filtrar_tablas('stroop2_');
+	$temas_stroop3 = $this->lista_tablas_model->listar_filtrar_tablas('stroop3_');
+	$temas_stroop4 = $this->lista_tablas_model->listar_filtrar_tablas('stroop4_');
+	$temas_stroop5 = $this->lista_tablas_model->listar_filtrar_tablas('stroop5_');
+	$temas_stroop6 = $this->lista_tablas_model->listar_filtrar_tablas('stroop6_');
+	$temas_stroop7 = $this->lista_tablas_model->listar_filtrar_tablas('stroop7_');
+	
+	echo br(4);
+		
+		print_r($temas_stroop1);
+		
+	echo br(4);
+		
+		print_r($temas_stroop2);
+	
+	echo br(4);
+		
+		print_r($temas_stroop3);
+	
+	echo br(4);
+		
+		print_r($temas_stroop4);
+		
+	echo br(4);
+		
+		print_r($temas_stroop5);
+		
+	echo br(4);
+		
+		print_r($temas_stroop6);
+		
+	echo br(4);
+		
+		print_r($temas_stroop7);
+  
+  
+   }
+   
+  	function tablillas()
+	{
+		$tablas = $this->db->list_tables();
+
+		foreach ($tablas as $tabla)
+		{
+			
+			$buscar = "stroop3";			
+			
+			$resultado = strpos($tabla, $buscar);					  
+					  
+		   if($resultado !== FALSE){
+			
+			$query[] = $tabla;	    		
+    		
+			}
+		}
+		
+		if(isset($query))
+		{		
+			
+				print_r($query);
+				
+				foreach ($query as $q)
+				{
+						
+					$cadena[] = explode("_", $q); 			
+				
+				}
+				
+				echo br(4);
+				
+				print_r($cadena);
+				
+				echo br(4);
+				
+				echo count($cadena);
+				
+				for($i=0;$i<count($cadena);$i++) {
+					
+					$datos[] = $cadena[$i][1];
+					
+				}	
+			}else{	
+				
+				$datos[]	 = 'No Disponible';
+				
+			}	
+			echo br(4);
+			
+			print_r($datos);
+				
+		
+	}
+
+	
+	
+	
+	function encriptar($enc, $dec)
+	{
+		echo "codificado: ".$this->encrypt->encode($enc);
+		echo br(4); 		
+		echo "decodificado".$this->encrypt->decode($dec);
+	
+	}	
+	
+}

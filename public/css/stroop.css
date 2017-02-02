@@ -1,0 +1,66 @@
+* {
+  font-family: Helvetica, sans-serif;
+  box-sizing: border-box;
+}
+ 
+body {
+  height: 100%;
+  background-color: black;
+  color: white;
+}
+ 
+#startstop,
+input {
+  font-size: 150%;
+}
+
+#b1, #b2, #b3, #b4, #b5,
+#b6, #b7, #b8, #b9, #b10, #reset, #save {
+  font-size: 150%;
+  border: 3px solid silver;
+  border-radius: 12px;
+  -moz-border-radius: 12px;
+  -webkit-border-radius: 12px;
+ 
+  cursor: pointer;
+  width:250px;
+  line-height:40px;
+  text-align:center;
+  height:80px;
+   
+  
+  
+  
+}
+ 
+#startstop,
+#content{
+ position:relative;
+  width: 100%;
+  height: auto;
+  vertical-align: top;
+  text-align: center;
+}
+#buttons, #back{
+ text-align: center;
+ vertical-align: text-top;
+ height: 70%;
+}
+#start {
+  font-size: 150%;
+  border: 3px solid silver;
+  border-radius: 12px;
+  -moz-border-radius: 12px;
+  -webkit-border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+}
+ 
+#content {
+  padding: 1in;
+  cursor: pointer;
+  font-size: 300%;
+  font-weight: bold;
+}
+ 
+
